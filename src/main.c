@@ -4,10 +4,11 @@
  * \brief Main of dummy
  *
  */
+#include "libc/types.h"
+#include "libc/syscall.h"
+#include "libc/stdio.h"
+#include "libc/string.h"
 #include "libconsole.h"
-#include "types.h"
-#include "api/syscall.h"
-#include "api/print.h"
 
 char buf[128] = { 0 };
 /*
@@ -46,9 +47,8 @@ int _main(uint32_t task_id)
 
     printf("sending welcome msg to UART4\n");
     console_log("[USART%x initialized for console output, baudrate=%x]\n", 4, 115200);
-    console_flush();
     while (1) {
-        uint32_t size = 128;
+        logsize_t size = 128;
         id = id_crypto;
         ret = sys_ipc(IPC_RECV_SYNC, &id, &size, buf);
         if (ret == SYS_E_INVAL) {
@@ -56,7 +56,6 @@ int _main(uint32_t task_id)
         }
         if (ret == SYS_E_DONE) {
           console_log(buf);
-          console_flush();
         }
     }
     printf("welcome msg sent\n");
