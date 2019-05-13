@@ -7,6 +7,8 @@ config APP_BENCHLOG
   ---help---
     Say y if you want to embbed BENCHLOG custom application.
 
+if APP_BENCHLOG
+
 config APP_BENCHLOG_FW
   bool "Benchlog App for firmware mode"
   depends on APP_BENCHLOG
@@ -156,5 +158,12 @@ endmenu
 endmenu
 
 endmenu
+
+config APP_BENCHLOG_USART
+   int "U(S)ART number"
+   range 1 6
+   default 4
+
+endif
 
 endmenu

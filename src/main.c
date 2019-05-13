@@ -4,6 +4,7 @@
  * \brief Main of dummy
  *
  */
+#include "autoconf.h"
 #include "libc/types.h"
 #include "libc/syscall.h"
 #include "libc/stdio.h"
@@ -21,13 +22,15 @@ int _main(uint32_t task_id)
     e_syscall_ret ret = 0;
     uint8_t id = 0;
     uint8_t id_crypto = 0;
+    uint32_t len;
+    uint32_t maxlen = 127;
 
     printf("Hello ! I'm benchlog, my id is %x\n", task_id);
 
     ret = sys_init(INIT_GETTASKID, "smart", &id);
     printf("smart is task %x !\n", id);
 
-    ret = console_early_init(4, 115200);
+    ret = console_early_init(CONFIG_APP_BENCHLOG_USART, 115200);
     printf("Registered USART through libconsole. Returns %s !\n",
            strerror(ret));
 
@@ -39,30 +42,22 @@ int _main(uint32_t task_id)
 
     ret = console_init();
     if (ret == 0) {
-        printf("USART4 is now configured !\n");
+        printf("USART%d is now configured !\n", CONFIG_APP_BENCHLOG_USART);
     } else {
-        printf("error during configuration of USART3\n");
+        printf("error during configuration of USART%d\n", CONFIG_APP_BENCHLOG_USART);
     }
 
-    printf("sending welcome msg to UART4\n");
-    console_log("[USART%x initialized for console output, baudrate=%x]\n", 4,
+    printf("sending welcome msg to UART%d\n", CONFIG_APP_BENCHLOG_USART);
+    console_log("[USART%x initialized for console output, baudrate=%d]\n", CONFIG_APP_BENCHLOG_USART,
                 115200);
-    while (1) {
-        logsize_t size = 128;
 
-        id = id_crypto;
-        ret = sys_ipc(IPC_RECV_SYNC, &id, &size, buf);
-        if (ret == SYS_E_INVAL) {
-            printf("error: recv_sync() returns SYS_E_INVAL\n");
-        }
-        if (ret == SYS_E_DONE) {
-            console_log(buf);
-        }
-    }
-    printf("welcome msg sent\n");
+    console_log("Starting logger prompt\n");
 
     while (1) {
-        sys_yield();
+	console_show_prompt();
+	console_readline(buf, &len, maxlen);
+	console_log("You wrote: %s\n", buf);
+	memset(buf, 0x0, 128);
     }
 
     return 0;
